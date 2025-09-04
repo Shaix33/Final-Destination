@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./farmweather
+    container_name: farmweather-backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./farmweather:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=farmweather.settings
+
+  frontend:
+    build: ./binary-blossom-frontend
+    container_name: frontend
+    volumes:
+      - ./binary-blossom-frontend:/app
+    ports:
+      - "5173:5173"

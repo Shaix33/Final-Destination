@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from farmweather.farm import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('farmweather.farm.urls')), # Frontend views
+    path('', views.home, name='home'), # Frontend views
+    path('api/', include('farmweather.farm.urls')),
 ]
