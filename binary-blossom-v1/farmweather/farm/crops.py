@@ -1,35 +1,69 @@
-def suggest_crops(avg_temp: float | None, total_rain_mm: float | None):
+# farm/crops.py
+
+"""
+Crop suggestion logic based on weather conditions.
+"""
+
+from typing import List, Optional, Dict
+
+
+def suggest_crops(avg_temp: Optional[float], total_rain_mm: Optional[float]) -> List[Dict[str, str]]:
     """
-    Very simple, explainable rules:
-    - Warm (>=22°C): warm-season crops
-    - Mild (15–22°C): cool-season leafy/root crops
-    - Cold (<15°C): hardy cool-season crops
-    Then tweak a bit for very dry or very wet forecasts.
+    Suggest crops based on average temperature and rainfall.
+
+    Args:
+        avg_temp (float): Average temperature in °C.
+        total_rain_mm (float): Total rainfall in mm.
+
+    Returns:
+        List[Dict[str, str]]: Suggested crops with reasoning.
     """
-    if avg_temp is None:
-        return ["(No forecast available to suggest crops)"]
 
-    crops = []
-    if avg_temp >= 22:
-        crops = ["Tomatoes", "Maize (corn)", "Green beans", "Peppers", "Sweet potato"]
-    elif 15 <= avg_temp < 22:
-        crops = ["Cabbage", "Spinach", "Beetroot", "Carrots", "Lettuce", "Peas"]
-    else:
-        crops = ["Kale", "Broccoli", "Onions", "Garlic", "Potatoes"]
+    if avg_temp is None or total_rain_mm is None:
+        return [{"name": "Unknown", "reason": "Insufficient weather data"}]
 
-    # Rainfall adjustments for next ~5 days
-    if total_rain_mm is not None:
-        if total_rain_mm < 5:
-            # very dry
-            crops = ["Sorghum", "Millet", "Cowpeas", "Sweet potato"] + [c for c in crops if c not in ["Lettuce"]]
-        elif total_rain_mm > 40:
-            # very wet
-            crops = ["Rice (paddy if fields allow)", "Taro", "Celery"] + crops
+    suggestions = []
 
-    # Keep a compact list for the UI
-    seen, unique = set(), []
-    for c in crops:
-        if c not in seen:
-            unique.append(c)
-            seen.add(c)
-    return unique[:8]
+    # Maize
+    if 18 <= avg_temp <= 27 and total_rain_mm >= 300:
+        suggestions.append({
+            "name": "Maize",
+            "reason": f"Thrives in {avg_temp:.1f}°C and {total_rain_mm:.0f} mm rainfall"
+        })
+
+    # Wheat
+    if 10 <= avg_temp <= 24 and 250 <= total_rain_mm <= 1000:
+        suggestions.append({
+            "name": "Wheat",
+            "reason": f"Suitable for cooler climates with {total_rain_mm:.0f} mm rainfall"
+        })
+
+    # Sorghum
+    if 20 <= avg_temp <= 30 and 400 <= total_rain_mm <= 800:
+        suggestions.append({
+            "name": "Sorghum",
+            "reason": "Drought-tolerant and grows in semi-arid regions"
+        })
+
+    # Sunflower
+    if 18 <= avg_temp <= 30 and 300 <= total_rain_mm <= 600:
+        suggestions.append({
+            "name": "Sunflower",
+            "reason": "Tolerates moderate rainfall and warmer weather"
+        })
+
+    # Groundnuts
+    if 22 <= avg_temp <= 28 and 500 <= total_rain_mm <= 1000:
+        suggestions.append({
+            "name": "Groundnuts",
+            "reason": "Prefers sandy soils, warm climates and steady rainfall"
+        })
+
+    # Default fallback
+    if not suggestions:
+        suggestions.append({
+            "name": "No clear recommendation",
+            "reason": f"Conditions ({avg_temp:.1f}°C, {total_rain_mm:.0f} mm) do not match known crop profiles"
+        })
+
+    return suggestions

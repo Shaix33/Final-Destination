@@ -1,14 +1,14 @@
 import os
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.conf import settings
 from .services import OpenMeteoService
 from .crops import suggest_crops
 
-# Serve React index.html
+# Serve React app
 def index(request):
-    return render(request, 'index.html')
+    return render(request, "index.html")
 
-# Backend logic
 weather_service = OpenMeteoService()
 
 def summarize_forecast(forecast):
@@ -24,7 +24,6 @@ def summarize_forecast(forecast):
         "total_rain_mm": rain
     }
 
-# Example JSON endpoint for React
 def home_data(request):
     lat, lon = -28.741943, 24.771944
     loc = "Kimberley"

@@ -11,8 +11,8 @@ router.register(r'weather', WeatherDataViewSet)
 router.register(r'profiles', UserProfileViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),           # /crops, /locations, etc.
-    path('home/', home_data, name='home_data'), # /home/ JSON endpoint
-    path('token-auth/', obtain_auth_token, name='api_token_auth'), # /token-auth/
-    path('', index, name='index'),            # catch-all for React
+    path("api/", include(router.urls)),       # all API endpoints under /api/
+    path("api/home/", home_data, name="home_data"),  # JSON endpoint
+    path("api/token-auth/", obtain_auth_token),      # API token auth
+    path("", index, name="index"),            # React frontend
 ]
