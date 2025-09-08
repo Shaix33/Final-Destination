@@ -8,6 +8,7 @@ from requests.exceptions import RequestException
 logger = logging.getLogger(__name__)
 
 class OpenMeteoService:
+    BASE_URL = "https://api.open-meteo.com/v1/forecast"
 
     def __init__(self):
         self.base_url = settings.OPENMETEO_BASE_URL
@@ -16,7 +17,7 @@ class OpenMeteoService:
     def get_current_weather(self, latitude: float, longitude: float) -> dict:
 
         try:
-            url = f"{self.base_url}/forecast"
+            url = self.base_url
             params = {
                 'latitude': latitude,
                 'longitude': longitude,
@@ -70,7 +71,7 @@ class OpenMeteoService:
         
     def get_weather_forecast(self, latitude: float, longitude: float, days: int = 7) -> dict:
         try:
-            url = f"{self.base_url}/forecast"
+            url = self.base_url
             params = {
                 'latitude': latitude,
                 'longitude': longitude,

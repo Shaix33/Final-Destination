@@ -1,10 +1,9 @@
+# farmweather/urls.py
+
 from django.contrib import admin
-from django.urls import path, include, re_path
-from farmweather.farm import views
+from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('farmweather.farm.urls')),
-    path('api/auth/', include('rest_framework.urls')),
-    re_path(r'^.*$', views.index),  # Catch-all for React
+    path("admin/", admin.site.urls),         # Django admin
+    path("", include("farmweather.farm.urls")),          # Include farm app routes
 ]

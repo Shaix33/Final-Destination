@@ -38,7 +38,7 @@ class WeatherDataAdmin(admin.ModelAdmin):
             f"/admin/farm/weatherdata/fetch/{obj.id}/"
         )
     fetch_latest.short_description = "Fetch Latest Weather"
-    fetch_latest.allow_tags = True
+    
 
 # Register models
 admin.site.register(Crop, CropAdmin)

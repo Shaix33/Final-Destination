@@ -25,8 +25,15 @@ def summarize_forecast(forecast):
     }
 
 def home_data(request):
-    lat, lon = -28.741943, 24.771944
-    loc = "Kimberley"
+    
+    try:
+        lat = float(request.GET.get("lat"))
+        lon = float(request.GET.get("lon"))
+        loc = "Your Location"
+    except (TypeError, ValueError):
+        # fallback if not provided
+        lat, lon = -28.741943, 24.771944
+        loc = "Kimberley"
 
     current = weather_service.get_current_weather(lat, lon)
     forecast = weather_service.get_weather_forecast(lat, lon, days=7)
