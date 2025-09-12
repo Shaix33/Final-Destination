@@ -12,10 +12,9 @@ router.register(r'weather', WeatherDataViewSet)
 router.register(r'profiles', UserProfileViewSet)
 
 urlpatterns = [
-    path("api/", include(router.urls)),        # All API endpoints
-    path("home/", home_data, name="home_data"), # JSON endpoint for weather/crops
-    path("api/token-auth/", obtain_auth_token), # Token auth
-
-    # IMPORTANT: React fallback must always be last
-    path("", index, name="index"),
+    path("api/", include(router.urls)),
+    path("home_data/", home_data, name="home_data"),
+    path("api/token-auth/", obtain_auth_token),
+    path("", index, name="index"),   # React frontend fallback (last!)
 ]
+
