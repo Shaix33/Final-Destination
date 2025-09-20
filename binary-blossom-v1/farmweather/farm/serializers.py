@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Crop, Location, WeatherData, UserProfile
+from .models import Crop, Location, WeatherData, UserProfile, UserSearchHistory, UserReport
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,3 +28,19 @@ class CropSerializer(serializers.ModelSerializer):
     class Meta:
         model = Crop
         fields = '__all__'
+
+# -------------------------------
+# New serializers for search history and reports
+# -------------------------------
+
+class UserSearchHistorySerializer(serializers.ModelSerializer):
+    location = LocationSerializer(read_only=True)
+
+    class Meta:
+        model = UserSearchHistory
+        fields = ['id', 'location', 'searched_at']
+
+class UserReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserReport
+        fields = ['id', 'title', 'description', 'data', 'generated_at']

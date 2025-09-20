@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Crop, Location, UserProfile, WeatherData
+from .models import Crop, Location, UserProfile, WeatherData, UserSearchHistory, UserReport
 from .services import OpenMeteoService
 import datetime
 
@@ -38,10 +38,23 @@ class WeatherDataAdmin(admin.ModelAdmin):
             f"/admin/farm/weatherdata/fetch/{obj.id}/"
         )
     fetch_latest.short_description = "Fetch Latest Weather"
-    
+
+# UserSearchHistory admin
+class UserSearchHistoryAdmin(admin.ModelAdmin):
+    list_display = ('user', 'location', 'searched_at')
+    search_fields = ('user__username', 'location__city')
+    list_filter = ('searched_at',)
+
+# UserReport admin
+class UserReportAdmin(admin.ModelAdmin):
+    list_display = ('user', 'title', 'generated_at')
+    search_fields = ('user__username', 'title')
+    list_filter = ('generated_at',)
 
 # Register models
 admin.site.register(Crop, CropAdmin)
 admin.site.register(Location, LocationAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(WeatherData, WeatherDataAdmin)
+admin.site.register(UserSearchHistory, UserSearchHistoryAdmin)
+admin.site.register(UserReport, UserReportAdmin)

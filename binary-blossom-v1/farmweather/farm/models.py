@@ -274,8 +274,31 @@ class UserProfileAdmin(admin.ModelAdmin):
     address_display.short_description = 'Address'
 
 class WeatherDataAdmin(admin.ModelAdmin):
-    list_display = ('id', 'location', 'temperature_current''temperature')
+    list_display = ('id', 'location', 'temperature_current', 'temperature')
 
     def temperature(self, obj):
         return f"{obj.temperature_current:.1f} °C" if obj.temperature_current is not None else "—"
     temperature.short_description = "Temperature (°C)"
+
+class UserSearchHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="search_history")
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="search_records")
+    searched_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-searched_at"]
+
+    def __str__(self):
+        return f"{self.user.username} searched {self.location.city} on {self.searched_at}"
+
+class UserReport(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reports")
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    # You could attach crop/weather insights here
+    data = models.JSONField(default=dict)
+
+    def __str__(self):
+        return f"Report: {self.title} for {self.user.username}"
