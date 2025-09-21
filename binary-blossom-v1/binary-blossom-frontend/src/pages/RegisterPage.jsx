@@ -13,7 +13,8 @@ import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 
-export default function LoginPage() {
+export default function RegisterPage() {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -24,11 +25,11 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     try {
-      const res = await API.post("/auth/login/", { email, password });
+      const res = await API.post("/auth/register/", { username, email, password });
       login(res.data.user, { access: res.data.access, refresh: res.data.refresh });
       navigate("/dashboard");
     } catch {
-      setError("Login failed");
+      setError("Registration failed");
     }
   };
 
@@ -51,12 +52,19 @@ export default function LoginPage() {
     <Container maxWidth="sm" sx={{ mt: 8 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
         <Typography variant="h4" gutterBottom align="center">
-          Login
+          Register
         </Typography>
 
         {error && <Alert severity="error">{error}</Alert>}
 
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+          <TextField
+            label="Username"
+            fullWidth
+            margin="normal"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
           <TextField
             label="Email"
             type="email"
@@ -79,7 +87,7 @@ export default function LoginPage() {
             fullWidth
             sx={{ mt: 2, backgroundColor: "#52b788" }}
           >
-            Login
+            Register
           </Button>
 
           <Typography align="center" sx={{ my: 2 }}>

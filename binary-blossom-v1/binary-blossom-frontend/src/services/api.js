@@ -1,46 +1,37 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://127.0.0.1:8000/api", // Django backend
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
   headers: { "Content-Type": "application/json" },
 });
 
-// Attach JWT access token to every request
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("accessToken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Auto-refresh expired tokens
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
       const refreshToken = localStorage.getItem("refreshToken");
       if (!refreshToken) {
         localStorage.removeItem("accessToken");
         window.location.href = "/login";
         return Promise.reject(error);
       }
-
       try {
-        const res = await axios.post("http://127.0.0.1:8000/api/auth/refresh/", {
-          refresh: refreshToken,
-        });
-
+        const res = await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api"}/token/refresh/`,
+          { refresh: refreshToken }
+        );
         const newAccess = res.data.access;
         localStorage.setItem("accessToken", newAccess);
-
         API.defaults.headers.Authorization = `Bearer ${newAccess}`;
         originalRequest.headers.Authorization = `Bearer ${newAccess}`;
-
         return API(originalRequest);
       } catch {
         localStorage.removeItem("accessToken");
@@ -48,7 +39,6 @@ API.interceptors.response.use(
         window.location.href = "/login";
       }
     }
-
     return Promise.reject(error);
   }
 );
