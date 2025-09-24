@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -10,14 +10,61 @@ import {
   Button,
   IconButton,
 } from "@mui/material";
-import { Brightness4, Brightness7, Agriculture, WbSunny, Opacity } from "@mui/icons-material";
+import {
+  Brightness4,
+  Brightness7,
+  Agriculture,
+  WbSunny,
+  Opacity,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import axios from "axios";
 
 export default function LandingPage() {
-  const [darkMode, setDarkMode] = React.useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // New states for time + location
+  const [time, setTime] = useState(new Date().toLocaleTimeString());
+  const [location, setLocation] = useState("Fetching location...");
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date().toLocaleTimeString());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Get location using browser geolocation + reverse geocoding
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          try {
+            const res = await axios.get(
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+            );
+            const place =
+              res.data.address.city ||
+              res.data.address.town ||
+              res.data.address.village ||
+              res.data.address.country;
+            setLocation(place);
+          } catch (err) {
+            console.error("Error fetching location:", err);
+            setLocation("Unknown Location");
+          }
+        },
+        () => setLocation("Location access denied")
+      );
+    } else {
+      setLocation("Geolocation not supported");
+    }
+  }, []);
 
   const themeColors = {
     background: darkMode ? "#1b4332" : "#e9f5db",
@@ -34,14 +81,39 @@ export default function LandingPage() {
   ];
 
   const crops = [
-    { name: "Maize", instructions: "Plant in well-drained soil with full sunlight. Water regularly.", icon: <Agriculture fontSize="large" /> },
-    { name: "Wheat", instructions: "Sow in cool seasons. Needs moderate watering and fertile soil.", icon: <WbSunny fontSize="large" /> },
-    { name: "Rice", instructions: "Requires wet soil conditions. Ideal for paddy fields.", icon: <Opacity fontSize="large" /> },
+    {
+      name: "Maize",
+      instructions:
+        "Plant in well-drained soil with full sunlight. Water regularly.",
+      icon: <Agriculture fontSize="large" />,
+    },
+    {
+      name: "Wheat",
+      instructions:
+        "Sow in cool seasons. Needs moderate watering and fertile soil.",
+      icon: <WbSunny fontSize="large" />,
+    },
+    {
+      name: "Rice",
+      instructions:
+        "Requires wet soil conditions. Ideal for paddy fields.",
+      icon: <Opacity fontSize="large" />,
+    },
   ];
 
   return (
-    <div style={{ background: themeColors.background, minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <AppBar position="static" style={{ background: darkMode ? "#081c15" : "#74c69d" }}>
+    <div
+      style={{
+        background: themeColors.background,
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <AppBar
+        position="static"
+        style={{ background: darkMode ? "#081c15" : "#74c69d" }}
+      >
         <Toolbar style={{ justifyContent: "space-between" }}>
           <Typography variant="h6" style={{ color: themeColors.text }}>
             🌱 Binary Blossom
@@ -52,12 +124,25 @@ export default function LandingPage() {
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="lg" style={{ flexGrow: 1, padding: "2rem 1rem", textAlign: "center" }}>
+      <Container
+        maxWidth="lg"
+        style={{ flexGrow: 1, padding: "2rem 1rem", textAlign: "center" }}
+      >
         <Typography variant="h3" gutterBottom style={{ color: themeColors.text }}>
           Welcome to Binary Blossom
         </Typography>
         <Typography variant="h6" gutterBottom style={{ color: themeColors.text }}>
-          {user ? `Hello, ${user.username}` : "Login or Register to access more functionality"}
+          {user
+            ? `Hello, ${user.username}`
+            : "Login or Register to access more functionality"}
+        </Typography>
+
+        {/* Time + Location here */}
+        <Typography
+          variant="subtitle1"
+          style={{ color: themeColors.text, marginBottom: "1rem" }}
+        >
+          🕒 {time} | 📍 {location}
         </Typography>
 
         <div style={{ margin: "1.5rem 0" }}>
@@ -89,30 +174,65 @@ export default function LandingPage() {
           )}
         </div>
 
-        <Typography variant="h5" gutterBottom style={{ color: themeColors.text }}>
+        {/* --- Your existing dashboard content (weather + crops) --- */}
+        <Typography
+          variant="h5"
+          gutterBottom
+          style={{ color: themeColors.text }}
+        >
           Current Weather
         </Typography>
-        <Typography style={{ color: themeColors.text }}>Temperature: 21.5°C</Typography>
-        <Typography style={{ color: themeColors.text }}>Condition: Sunny</Typography>
+        <Typography style={{ color: themeColors.text }}>
+          Temperature: 21.5°C
+        </Typography>
+        <Typography style={{ color: themeColors.text }}>
+          Condition: Sunny
+        </Typography>
 
-        <Typography variant="h5" style={{ marginTop: "2rem", marginBottom: "1rem", color: themeColors.text }}>
+        <Typography
+          variant="h5"
+          style={{
+            marginTop: "2rem",
+            marginBottom: "1rem",
+            color: themeColors.text,
+          }}
+        >
           5-Day Forecast
         </Typography>
         <Grid container spacing={3}>
           {forecast.map((day, index) => (
             <Grid item xs={12} sm={6} md={2} key={index}>
-              <Card style={{ background: themeColors.cardBg, borderRadius: "1rem", boxShadow: "0px 4px 10px rgba(0,0,0,0.2)" }}>
+              <Card
+                style={{
+                  background: themeColors.cardBg,
+                  borderRadius: "1rem",
+                  boxShadow: "0px 4px 10px rgba(0,0,0,0.2)",
+                }}
+              >
                 <CardContent>
-                  <Typography variant="h6" style={{ color: themeColors.text }}>{day.day}</Typography>
-                  <Typography style={{ color: themeColors.text }}>{day.temp}</Typography>
-                  <Typography style={{ color: themeColors.text }}>{day.condition}</Typography>
+                  <Typography variant="h6" style={{ color: themeColors.text }}>
+                    {day.day}
+                  </Typography>
+                  <Typography style={{ color: themeColors.text }}>
+                    {day.temp}
+                  </Typography>
+                  <Typography style={{ color: themeColors.text }}>
+                    {day.condition}
+                  </Typography>
                 </CardContent>
               </Card>
             </Grid>
           ))}
         </Grid>
 
-        <Typography variant="h5" style={{ marginTop: "2rem", marginBottom: "1rem", color: themeColors.text }}>
+        <Typography
+          variant="h5"
+          style={{
+            marginTop: "2rem",
+            marginBottom: "1rem",
+            color: themeColors.text,
+          }}
+        >
           Suggested Crops
         </Typography>
         <Grid container spacing={3}>
@@ -127,12 +247,19 @@ export default function LandingPage() {
                   transition: "transform 0.3s",
                 }}
                 onClick={() => alert(crop.instructions)}
-                onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-                onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.transform = "scale(1.05)")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.transform = "scale(1)")
+                }
               >
                 <CardContent>
                   {crop.icon}
-                  <Typography variant="h6" style={{ marginTop: "0.5rem", color: themeColors.text }}>
+                  <Typography
+                    variant="h6"
+                    style={{ marginTop: "0.5rem", color: themeColors.text }}
+                  >
                     {crop.name}
                   </Typography>
                 </CardContent>

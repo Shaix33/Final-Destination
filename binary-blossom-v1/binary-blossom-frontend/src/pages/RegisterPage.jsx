@@ -7,10 +7,11 @@ import {
   TextField,
   Button,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
-import API from "../services/api";
+import axiosInstance from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 
 export default function RegisterPage() {
@@ -18,33 +19,40 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
+
     try {
-      const res = await API.post("/auth/register/", { username, email, password });
+      const res = await axiosInstance.post("/auth/register/", { username, email, password });
       login(res.data.user, { access: res.data.access, refresh: res.data.refresh });
       navigate("/dashboard");
-    } catch {
-      setError("Registration failed");
+    } catch (err) {
+      setError(err.response?.data?.error || "Registration failed");
+      setPassword("");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleGoogleLogin = async (credentialResponse) => {
+    setError(null);
+    setLoading(true);
     try {
-      const res = await API.post("/auth/google/", {
+      const res = await axiosInstance.post("/auth/google/", {
         token: credentialResponse.credential,
       });
-      login(res.data.user, {
-        access: res.data.access,
-        refresh: res.data.refresh,
-      });
+      login(res.data.user, { access: res.data.access, refresh: res.data.refresh });
       navigate("/dashboard");
-    } catch {
-      setError("Google login failed");
+    } catch (err) {
+      setError(err.response?.data?.error || "Google login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,7 +63,7 @@ export default function RegisterPage() {
           Register
         </Typography>
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
           <TextField
@@ -64,6 +72,7 @@ export default function RegisterPage() {
             margin="normal"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            required
           />
           <TextField
             label="Email"
@@ -72,6 +81,7 @@ export default function RegisterPage() {
             margin="normal"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
           <TextField
             label="Password"
@@ -80,21 +90,26 @@ export default function RegisterPage() {
             margin="normal"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
           <Button
             type="submit"
             variant="contained"
             fullWidth
             sx={{ mt: 2, backgroundColor: "#52b788" }}
+            disabled={loading}
           >
-            Register
+            {loading ? <CircularProgress size={24} /> : "Register"}
           </Button>
 
           <Typography align="center" sx={{ my: 2 }}>
             OR
           </Typography>
 
-          <GoogleLogin onSuccess={handleGoogleLogin} onError={() => setError("Google login failed")} />
+          <GoogleLogin
+            onSuccess={handleGoogleLogin}
+            onError={() => setError("Google login failed")}
+          />
         </Box>
       </Paper>
     </Container>
