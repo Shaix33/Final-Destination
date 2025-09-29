@@ -1,4 +1,7 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
+from rest_framework.views import APIView
+from django.contrib.auth.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils.timezone import now
@@ -132,3 +135,33 @@ class UserReportViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+# ----------------------
+# User Registration Endpoint
+# ----------------------
+class RegisterView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        username = request.data.get("username")
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        if not username or not email or not password:
+            return Response({"detail": "All fields are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(username=username).exists():
+            return Response({"detail": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if User.objects.filter(email=email).exists():
+            return Response({"detail": "Email already exists"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.create_user(username=username, email=email, password=password)
+
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            "user": {"username": user.username, "email": user.email},
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        }, status=status.HTTP_201_CREATED)

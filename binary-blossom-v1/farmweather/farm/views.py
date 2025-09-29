@@ -1,6 +1,9 @@
 import requests
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -138,43 +141,9 @@ class UserReportViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(report)
         return Response(serializer.data)
     
-class GoogleLoginView(APIView):
-    """
-    Accepts a Google ID token from the frontend, verifies it, and returns a JWT.
-    """
-
-    def post(self, request):
-        id_token = request.data.get("token")
-        if not id_token:
-            return Response({"error": "No token provided"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Verify the token with Google
-        try:
-            response = requests.get(f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}")
-            response.raise_for_status()
-            user_info = response.json()
-        except requests.RequestException:
-            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
-
-        email = user_info.get("email")
-        if not email:
-            return Response({"error": "Email not found in token"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Get or create user
-        user, created = User.objects.get_or_create(username=email, defaults={"email": email})
-
-        # Generate JWT
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-            "user": {"username": user.username, "email": user.email},
-        })
-    
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(APIView):
-    """
-    Register a new user and return JWT tokens.
-    """
+    permission_classes = [AllowAny]  # Allow public access
     def post(self, request):
         username = request.data.get("username")
         email = request.data.get("email")
@@ -186,8 +155,6 @@ class RegisterView(APIView):
             return Response({"error": "Username already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
         user = User.objects.create_user(username=username, email=email, password=password)
-
-        # Generate JWT
         refresh = RefreshToken.for_user(user)
         return Response({
             "refresh": str(refresh),
@@ -195,17 +162,46 @@ class RegisterView(APIView):
             "user": {"username": user.username, "email": user.email},
         })
 
+
 class LoginView(APIView):
-    """
-    Login with username/password and return JWT tokens.
-    """
+    permission_classes = [AllowAny]
+    
     def post(self, request):
-        username = request.data.get("username")
+        # Fix: Accept both username and email
+        username = request.data.get("username") or request.data.get("email")
         password = request.data.get("password")
+        
         user = authenticate(username=username, password=password)
         if not user:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user": {"username": user.username, "email": user.email},
+        })
 
+
+class GoogleLoginView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        id_token = request.data.get("token")
+        if not id_token:
+            return Response({"error": "No token provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            response = requests.get(f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}")
+            response.raise_for_status()
+            user_info = response.json()
+        except requests.RequestException:
+            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+
+        email = user_info.get("email")
+        if not email:
+            return Response({"error": "Email not found in token"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user, created = User.objects.get_or_create(username=email, defaults={"email": email})
         refresh = RefreshToken.for_user(user)
         return Response({
             "refresh": str(refresh),
