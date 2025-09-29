@@ -1,6 +1,6 @@
 import requests
 from django.conf import settings
-from django.core.cache import cache
+from  django.core.cache import cache
 from datetime import datetime, timedelta
 import logging
 from requests.exceptions import RequestException
@@ -14,13 +14,14 @@ class OpenMeteoService:
         self.base_url = settings.OPENMETEO_BASE_URL
         self.geocoding_url = settings.GEOCODING_API_URL
 
-    def get_current_weather(self, latitude: float, longitude: float) -> dict | None:
+    def get_current_weather(self, latitude: float, longitude: float) -> dict:
+
         try:
             url = self.base_url
             params = {
                 'latitude': latitude,
                 'longitude': longitude,
-                'current': [
+                'current' : [
                     'temperature_2m',
                     'relative_humidity_2m',
                     'apparent_temperature',
@@ -60,14 +61,15 @@ class OpenMeteoService:
                 'elevation': data.get('elevation'),
                 'time': current.get('time'),
             }
-        except RequestException as e:
-            logger.error(f"Error fetching current weather: {e}")
-            return None
+        except requests.RequestException as e:
+                    logger.error(f"Error fetching current weather: {e}")
+                    return None
         except Exception as e:
             logger.error(f"Weather data processing error: {e}")
             return None
-
-    def get_weather_forecast(self, latitude: float, longitude: float, days: int = 7) -> dict | None:
+        
+        
+    def get_weather_forecast(self, latitude: float, longitude: float, days: int = 7) -> dict:
         try:
             url = self.base_url
             params = {
@@ -90,7 +92,6 @@ class OpenMeteoService:
                 'timezone': 'auto',
                 'forecast_days': min(days, 16),
             }
-
             response = requests.get(url, params=params, timeout=10)
             response.raise_for_status()
             data = response.json()
@@ -103,34 +104,37 @@ class OpenMeteoService:
                 'elevation': data.get('elevation'),
                 'days': []
             }
+            
 
             for i, date_str in enumerate(dates):
                 day_data = {
                     'date': date_str,
-                    'temperature_max': daily.get('temperature_2m_max', [None] * len(dates))[i],
-                    'temperature_min': daily.get('temperature_2m_min', [None] * len(dates))[i],
-                    'apparent_temperature_max': daily.get('apparent_temperature_max', [None] * len(dates))[i],
-                    'apparent_temperature_min': daily.get('apparent_temperature_min', [None] * len(dates))[i],
-                    'precipitation_sum': daily.get('precipitation_sum', [0] * len(dates))[i],
-                    'precipitation_probability': daily.get('precipitation_probability_max', [0] * len(dates))[i],
-                    'weather_code': daily.get('weather_code', [None] * len(dates))[i],
-                    'cloud_cover_mean': daily.get('cloud_cover_mean', [None] * len(dates))[i],
-                    'wind_speed_max': daily.get('windspeed_10m_max', [None] * len(dates))[i],
-                    'wind_gusts_max': daily.get('windgusts_10m_max', [None] * len(dates))[i],
-                    'wind_direction': daily.get('wind_direction_10m_dominant', [None] * len(dates))[i],
-                    'uv_index': daily.get('uv_index_max', [None] * len(dates))[i],
+                    'temperature_max': daily.get('temperature_2m_max', [None]*len(dates))[i],
+                    'temperature_min': daily.get('temperature_2m_min', [None]*len(dates))[i],
+                    'apparent_temperature_max': daily.get('apparent_temperature_max', [None]*len(dates))[i],
+                    'apparent_temperature_min': daily.get('apparent_temperature_min', [None]*len(dates))[i],
+                    'precipitation_sum': daily.get('precipitation_sum', [0]*len(dates))[i],
+                    'precipitation_probability': daily.get('precipitation_probability_max', [0]*len(dates))[i],
+                    'weather_code': daily.get('weather_code', [None]*len(dates))[i],
+                    'cloud_cover_mean': daily.get('cloud_cover_mean', [None]*len(dates))[i],
+                    'wind_speed_max': daily.get('windspeed_10m_max', [None]*len(dates))[i],
+                    'wind_gusts_max': daily.get('windgusts_10m_max', [None]*len(dates))[i],
+                    'wind_direction': daily.get('wind_direction_10m_dominant', [None]*len(dates))[i],
+                    'uv_index': daily.get('uv_index_max', [None]*len(dates))[i]
                 }
                 forecast_data['days'].append(day_data)
 
             return forecast_data
-        except RequestException as e:
+        
+        except requests.RequestException as e:
             logger.error(f"Error fetching weather forecast: {e}")
             return None
         except Exception as e:
             logger.error(f"Forecast data processing error: {e}")
             return None
-
+    
     def get_historical_weather(self, latitude: float, longitude: float, start_date, end_date) -> dict | None:
+    
         try:
             url = f"{self.base_url}/archive"
             params = {
@@ -143,9 +147,9 @@ class OpenMeteoService:
                     'temperature_2m_max',
                     'temperature_2m_min',
                     'precipitation_sum',
-                    'wind_speed_10m_max',
+                    'wind_speed_10m_max'
                 ],
-                'timezone': 'auto',
+                'timezone': 'auto'
             }
 
             response = requests.get(url, params=params, timeout=15)
@@ -164,18 +168,20 @@ class OpenMeteoService:
             for i, date_str in enumerate(dates):
                 day_data = {
                     'date': date_str,
-                    'weather_code': daily.get('weather_code', [None] * len(dates))[i],
-                    'temperature_max': daily.get('temperature_2m_max', [None] * len(dates))[i],
-                    'temperature_min': daily.get('temperature_2m_min', [None] * len(dates))[i],
-                    'precipitation_sum': daily.get('precipitation_sum', [0] * len(dates))[i],
-                    'wind_speed_max': daily.get('wind_speed_10m_max', [None] * len(dates))[i],
+                    'weather_code': daily.get('weather_code', [None]*len(dates))[i],
+                    'temperature_max': daily.get('temperature_2m_max', [None]*len(dates))[i],
+                    'temperature_min': daily.get('temperature_2m_min', [None]*len(dates))[i],
+                    'precipitation_sum': daily.get('precipitation_sum', [0]*len(dates))[i],
+                    'wind_speed_max': daily.get('wind_speed_10m_max', [None]*len(dates))[i]
                 }
                 historical_data['days'].append(day_data)
 
             return historical_data
-        except RequestException as e:
+
+        except requests.RequestException as e:
             logger.error(f"OpenMeteo historical weather API error: {e}")
             return None
         except Exception as e:
             logger.error(f"Historical weather data processing error: {e}")
             return None
+        
