@@ -36,37 +36,48 @@ Binary Blossom is a web application that provides weather forecasts and crop rec
 ### Installation
 
 git clone https://github.com/Shaix33/Final-Destination.git
-cd cd binary-blossom-v1
+cd binary-blossom-v1/
 
 **Backend**
+<!-- Navigate to backend Directory -->
+cd /farmweather/
+<!-- Create and activate virtual environment -->
+python -m venv venv
+source venv/bin/activate <!-- Linux/Mac -->
+.venv\Scripts\activate <!-- Windows -->
+
+<!-- Install dependencies -->
+pip install -r requirements
+
+<!-- Run migrations -->
+python manage.py migrate
+
+<!-- Start development server -->
+python manage.py runserver
+
+**Frontend**
+cd ../binary-blossom-frontend/
+
+<!-- Install dependencies -->
+npm install
+
+<!-- start development server -->
+npm run dev
 
 ## Project Structure
 
 
-Running the Application
-
-Start the Django backend:
-
-python manage.py runserver
 
 
-Access the application in your browser at:
 
-http://127.0.0.1:8000/
-
-
-React frontend is served from Django in production (index.html under farm/templates).
 
 API Endpoints
-Endpoint	Method	Description
-/crops/	GET/POST	List/Create crops
-/locations/	GET/POST	List/Create locations
-/weather/	GET	Get weather data
-/profiles/	GET/POST	List/Create user profiles
-/home/	GET	JSON endpoint for React frontend
-/token-auth/	POST	Obtain authentication token
-Backend Services
+Endpoint                    	Method	                      Description
+/api/auth/register            POST                          New user registration
+/api/auth/login               POST                          Existing user login
+/api/auth/google              POST                          Google OAuth login
+/api/token/refresh            POST                          Refresh JWT token
+/api/home/  	                GET                           Get crop and weather data
+/api/search-history           GET/POST                      Get/save search history
+/api/reports/                 GET/POST                      Get/generate reports
 
-OpenMeteoService: Fetches weather data from Open-Meteo API.
-
-Crops.suggest_crops(): Suggests crops based on forecasted weather conditions.
