@@ -56,6 +56,7 @@ python manage.py migrate
 python manage.py runserver
 
 <u>**Frontend**</u>
+
 cd ../binary-blossom-frontend/
 
 <!-- Install dependencies -->
