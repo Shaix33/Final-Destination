@@ -1,28 +1,48 @@
-# FarmWeather
+# Binary Blossom
 
-FarmWeather is a web application that provides weather forecasts and crop recommendations for farmers. It combines a Django REST API backend with a React frontend to deliver real-time weather and agricultural guidance.
+Binary Blossom is a web application that provides weather forecasts and crop recommendations for farmers. It combines a Django REST API backend with a React frontend to deliver real-time weather and agricultural guidance.
+
+<img width="1187" height="789" alt="Recent" src="https://github.com/user-attachments/assets/57ee34f6-3164-4eec-9bf7-312a6315a52c" />
 
 ## Features
 
-- View current weather and 7-day forecasts for a location.
-- Receive crop recommendations based on temperature and rainfall.
-- CRUD API endpoints for crops, locations, weather data, and user profiles.
-- Token-based authentication for secure API access.
-- Single-page React frontend served via Django.
+### **Core Features**
+- ** Real-time Weather data**: View current weather and 7-day forecasts for a location.
+- **Crop Recommendations**: Receive crop recommendations based on temperature and rainfall.
+- **Location and Search**: find insights for any location.
+- **Crop availability checker**: determine if crops are suitable for a specific location.
+- **Search history**: Track previously searched locations.
+- **Generate reports**: Create and save detailed agricultural reports.
+- **Dark & Light mode**: Customizable UI theme background for user experience.
+- **CRUD API endpoints for crops, locations, weather data, and user profiles.
+- **Token-based authentication for secure API access.
+
+### **Technical Features**
+- **React.js** frontend with Material UI components.
+- **Django REST framework** backend
+- **JWT Tokens** authentication
+- **Google OAuth** authentication
+- **OpenWeatherMap API** for weather data
+- **OpenStreetMap Nomatim API** reverse geolocation.
+
+### Prerequisites
+- **Visual Studio Code** IDE
+- **Node.js** (v20+)
+- **npm or yarn**
+- **Python** (v13+)
+- **Django** (v5+)
+- **Docker Desktop** (optional)
+
+### Installation
+
+git clone https://github.com/Shaix33/Final-Destination.git
+cd cd binary-blossom-v1
+
+**Backend**
 
 ## Project Structure
 
-farmweather/
-├─ farmweather/ # Django project settings
-├─ farm/ # Django app
-│ ├─ api_views.py # DRF ViewSets
-│ ├─ views.py # React entry point & JSON endpoints
-│ ├─ models.py
-│ ├─ serializers.py
-│ ├─ urls.py
-│ ├─ static/ # React build assets
-│ └─ templates/ # index.html
-└─ binary-blossom-frontend/ # React project
+
 Running the Application
 
 Start the Django backend:
