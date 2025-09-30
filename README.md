@@ -38,7 +38,7 @@ Binary Blossom is a web application that provides weather forecasts and crop rec
 git clone https://github.com/Shaix33/Final-Destination.git
 cd binary-blossom-v1/
 
-**Backend**
+<u>**Backend**</u>
 <!-- Navigate to backend Directory -->
 cd /farmweather/
 <!-- Create and activate virtual environment -->
@@ -55,7 +55,7 @@ python manage.py migrate
 <!-- Start development server -->
 python manage.py runserver
 
-**Frontend**
+<u>**Frontend**</u>
 cd ../binary-blossom-frontend/
 
 <!-- Install dependencies -->
